@@ -8,7 +8,7 @@ import Tips from "@/features/home/Tips";
 const Home = () => {
   return (
     <>
-      <div className="mt-5 space-y-10">
+      <div className="mt-5 space-y-10 px-10">
         <SetQuestion />
         <GenerateQuestions />
         <Tips />

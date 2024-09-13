@@ -8,7 +8,7 @@ const BreadNavigation = () => {
   const pathnameArray = pathname.split("/");
   const currentPath = pathnameArray[pathnameArray.length - 1];
   return (
-    <nav className="flex mt-8 mb-4 max-w-screen-lg mx-auto items-center space-x-4 text-gray-700">
+    <nav className="flex mt-8 mb-4 max-w-screen-lg mx-auto items-center space-x-4 text-gray-700 px-10">
       <Link
         href="/"
         className={`px-px text-blue-700 ${
