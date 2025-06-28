@@ -1,6 +1,6 @@
 "use client";
 import Button from "@/components/Button";
-import Scoring from "@/components/Scoring";
+import LoadingUi from "@/components/LoadingUi";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -148,7 +148,7 @@ const Correction = () => {
               </Button>
             </div>
           </div>
-          {loading && <Scoring />}
+          {loading && <LoadingUi message={UI_CONSTANTS.LOADING_TEXT.SCORING} />}
         </div>
       </div>
 
