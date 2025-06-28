@@ -3,7 +3,12 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useGeneration } from "@/hooks/useGeneration";
 import LoadingUi from "@/components/LoadingUi";
-import { LEVELS, TOPICS, WORD_COUNT_OPTIONS, UI_CONSTANTS } from "@/config/constants";
+import {
+  LEVELS,
+  TOPICS,
+  WORD_COUNT_OPTIONS,
+  UI_CONSTANTS,
+} from "@/config/constants";
 
 const GenerateQuestions = () => {
   const router = useRouter();
@@ -17,12 +22,13 @@ const GenerateQuestions = () => {
 
   const handleGenerate = async () => {
     // Prepare the request data
-    const selectedTopic = Object.values(TOPICS).find(t => t.value === topic);
-    const selectedLevel = Object.values(LEVELS).find(l => l.value === level);
-    
+    const selectedTopic = Object.values(TOPICS).find((t) => t.value === topic);
+    const selectedLevel = Object.values(LEVELS).find((l) => l.value === level);
+
     const genre = selectedTopic?.apiValue || TOPICS.none.apiValue;
     const difficulty = selectedLevel?.apiValue || LEVELS.none.apiValue;
-    const wordCount = answerWordCount === "none" ? WORD_COUNT_OPTIONS.DEFAULT : answerWordCount;
+    const wordCount =
+      answerWordCount === "none" ? WORD_COUNT_OPTIONS.DEFAULT : answerWordCount;
 
     // Add keywords to genre if provided
     let finalGenre = genre;
@@ -46,12 +52,19 @@ const GenerateQuestions = () => {
 
   return (
     <section className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">AIで問題を生成する</h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">
+        AIで問題を生成する
+      </h2>
       <div className="bg-gray-50 rounded-xl p-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="level" className="block text-sm font-medium text-gray-700 mb-2">レベル</label>
+              <label
+                htmlFor="level"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                レベル
+              </label>
               <select
                 id="level"
                 name="level"
@@ -67,7 +80,12 @@ const GenerateQuestions = () => {
               </select>
             </div>
             <div>
-              <label htmlFor="topic" className="block text-sm font-medium text-gray-700 mb-2">テーマ</label>
+              <label
+                htmlFor="topic"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                テーマ
+              </label>
               <select
                 id="topic"
                 name="topic"
@@ -85,7 +103,12 @@ const GenerateQuestions = () => {
           </div>
           <div className="space-y-4">
             <div>
-              <label htmlFor="questionWordCount" className="block text-sm font-medium text-gray-700 mb-2">問題の文字数</label>
+              <label
+                htmlFor="questionWordCount"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                問題の文字数
+              </label>
               <select
                 id="questionWordCount"
                 name="questionWordCount"
@@ -102,7 +125,12 @@ const GenerateQuestions = () => {
               </select>
             </div>
             <div>
-              <label htmlFor="answerWordCount" className="block text-sm font-medium text-gray-700 mb-2">回答の文字数</label>
+              <label
+                htmlFor="answerWordCount"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                回答の文字数
+              </label>
               <select
                 id="answerWordCount"
                 name="answerWordCount"
@@ -122,7 +150,12 @@ const GenerateQuestions = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="keyword1" className="block text-sm font-medium text-gray-700 mb-2">キーワード1</label>
+            <label
+              htmlFor="keyword1"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              キーワード1
+            </label>
             <input
               id="keyword1"
               className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-transparent"
@@ -134,7 +167,12 @@ const GenerateQuestions = () => {
             />
           </div>
           <div>
-            <label htmlFor="keyword2" className="block text-sm font-medium text-gray-700 mb-2">キーワード2</label>
+            <label
+              htmlFor="keyword2"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              キーワード2
+            </label>
             <input
               id="keyword2"
               className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-transparent"
@@ -154,7 +192,9 @@ const GenerateQuestions = () => {
           onClick={handleGenerate}
           disabled={loading}
         >
-          {loading ? UI_CONSTANTS.LOADING_TEXT.GENERATING : UI_CONSTANTS.BUTTON_TEXT.GENERATE}
+          {loading
+            ? UI_CONSTANTS.LOADING_TEXT.GENERATING
+            : UI_CONSTANTS.BUTTON_TEXT.GENERATE}
         </button>
       </div>
 
@@ -172,9 +212,11 @@ const GenerateQuestions = () => {
 
       {questions.length > 0 && (
         <div className="mt-8 space-y-4">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">生成された問題</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            生成された問題
+          </h3>
           <ul className="space-y-4">
-            {questions.map((question, index) => (
+            {questions.map((question) => (
               <li key={question.id} className="bg-gray-50 rounded-xl p-6">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                   <div className="flex-1 text-gray-700 font-medium leading-relaxed">
@@ -182,7 +224,12 @@ const GenerateQuestions = () => {
                   </div>
                   <button
                     className="bg-orange-500 text-white rounded-xl px-6 py-3 font-medium hover:bg-orange-600 transition-colors duration-200 whitespace-nowrap"
-                    onClick={() => handleClick(question.question, question.suggestedWordCount)}
+                    onClick={() =>
+                      handleClick(
+                        question.question,
+                        question.suggestedWordCount
+                      )
+                    }
                   >
                     {UI_CONSTANTS.BUTTON_TEXT.CHALLENGE}
                   </button>

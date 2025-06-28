@@ -1,5 +1,4 @@
 "use client";
-import Button from "@/components/Button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
@@ -17,7 +16,7 @@ export default function Writing() {
       `/writing/correction?question=${question}&answer=${answer}&wordCount=${wordCount}`
     );
   };
-  
+
   const isAnswerEmpty = !answer?.trim();
   return (
     <div className="flex-1 bg-gradient-to-br from-gray-50 to-blue-50 py-6">
@@ -39,7 +38,7 @@ export default function Writing() {
               </div>
             </div>
           )}
-          
+
           <div className="mb-4">
             <label className="block text-gray-700 font-semibold mb-2 text-base">
               解答欄
@@ -53,7 +52,7 @@ export default function Writing() {
               onChange={(e) => setAnswer(e.target.value)}
             />
           </div>
-          
+
           <div className="flex justify-center mt-4">
             <button
               className={`px-6 py-3 text-white rounded-xl font-medium transition-colors duration-200 ${
