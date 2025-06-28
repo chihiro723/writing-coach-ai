@@ -1,35 +1,68 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
+import { openai, questionGeneratorFunction, getDefaultChatCompletionParams } from "@/lib/openai";
+import { APIError, createAPIError, logAPIError } from "@/lib/errors";
+import { ERROR_MESSAGES, SYSTEM_PROMPTS, USER_PROMPT_TEMPLATES } from "@/config/constants";
+import type { GenerationRequest, GenerationResponse } from "@/types/api";
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-});
+export async function POST(req: Request) {
+  let genre: string | undefined;
+  let level: string | undefined;
+  let wordCount: string | undefined;
 
-export async function GET(req: Request) {
-  const url = new URL(req.url);
-  const optionsString = url.searchParams.get("options")
-  console.log(optionsString)
-    try {
-        const response = await openai.chat.completions.create({
-        messages: [
-            {"role": "system", "content": '英語で返答してください'},
-            {"role": "user", "content": `英作文問題を5問生成して、フォーマットは配列で、問題の文章のみを格納し、また[]の中身だけ生成して。問題の内容については、次の条件を取り入れること。${optionsString}`}
-          ],
-        model: "gpt-4o-mini",
-        });
-        if (!response.choices || response.choices.length === 0) {
-            return NextResponse.json(
-              { error: "No response from OpenAI." },
-              { status: 500 }
-            );
-        }
-        return NextResponse.json(response.choices[0].message.content);
-    } catch(error: unknown) {
-        console.error("Error during OpenAI API call:", error);
+  try {
+    const body: GenerationRequest = await req.json();
+    ({ genre, level, wordCount } = body);
 
-        return NextResponse.json(
-          { error: "Failed to process the request." },
-          { status: 500 }
-        );
+    if (!genre || !level || !wordCount) {
+      throw createAPIError(400, ERROR_MESSAGES.GENERATION_PARAMS_REQUIRED);
     }
+
+    const response = await openai.chat.completions.create({
+      ...getDefaultChatCompletionParams(),
+      messages: [
+        {
+          role: "system",
+          content: SYSTEM_PROMPTS.QUESTION_GENERATION
+        },
+        {
+          role: "user",
+          content: USER_PROMPT_TEMPLATES.QUESTION_GENERATION(genre, level, wordCount)
+        }
+      ],
+      functions: [questionGeneratorFunction],
+      function_call: { name: "generate_questions" },
+    });
+
+    const functionCall = response.choices[0].message.function_call;
+    if (!functionCall || !functionCall.arguments) {
+      throw createAPIError(500, ERROR_MESSAGES.OPENAI_RESPONSE_INVALID);
+    }
+
+    const result: GenerationResponse = JSON.parse(functionCall.arguments);
+    
+    // Add genre, level, and wordCount to each question
+    result.questions = result.questions.map((q, index) => ({
+      ...q,
+      id: q.id || `q-${Date.now()}-${index}`,
+      genre: q.genre || genre!,
+      level: q.level || level!,
+      suggestedWordCount: q.suggestedWordCount || wordCount!,
+    }));
+    
+    return NextResponse.json(result);
+  } catch (error: unknown) {
+    logAPIError("Question Generation", error, { genre, level, wordCount });
+    
+    if (error instanceof APIError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.statusCode }
+      );
+    }
+    
+    return NextResponse.json(
+      { error: ERROR_MESSAGES.QUESTION_GENERATION_FAILED },
+      { status: 500 }
+    );
+  }
 }

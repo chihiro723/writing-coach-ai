@@ -1,36 +1,59 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
+import { openai, scoringFunction, getDefaultChatCompletionParams } from "@/lib/openai";
+import { APIError, createAPIError, logAPIError } from "@/lib/errors";
+import { ERROR_MESSAGES, SYSTEM_PROMPTS, USER_PROMPT_TEMPLATES } from "@/config/constants";
+import type { CorrectionRequest, ScoringResponse } from "@/types/api";
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-});
+export async function POST(req: Request) {
+  let question: string | undefined;
+  let answer: string | undefined;
+  let wordCount: string | undefined;
 
-export async function GET(req: Request) {
-    const url = new URL(req.url);
-    const question = url.searchParams.get('question') || '';
-    const answer = url.searchParams.get('answer') || '';
-    const wordCount = url.searchParams.get('wordCount') || '';
-    try {
-        const response = await openai.chat.completions.create({
-        messages: [
-            {"role": "system", "content": "あなたは実用英語技能検定の英作文添削のプロ講師です。問題に対する回答に対して、文法、表現、綴り、文章内容、論理性、単語数などの要素を踏まえた上で0~100の点数をつけてください。1~100の数字のみで返答してください。"},
-            {"role": "user", "content": `問題:${question} 回答に求められる単語数:${wordCount} 回答内容:${answer}`}
-          ],
-        model: "gpt-4o-mini",
-        });
-        if (!response.choices || response.choices.length === 0) {
-            return NextResponse.json(
-              { error: "No response from OpenAI." },
-              { status: 500 }
-            );
-        }
-        return NextResponse.json(response.choices[0].message.content);
-    } catch(error: unknown) {
-        console.error("Error during OpenAI API call:", error);
+  try {
+    const body: CorrectionRequest = await req.json();
+    ({ question, answer, wordCount } = body);
 
-        return NextResponse.json(
-          { error: "Failed to process the request." },
-          { status: 500 }
-        );
+    if (!question || !answer) {
+      throw createAPIError(400, ERROR_MESSAGES.QUESTION_ANSWER_REQUIRED);
     }
+
+    const response = await openai.chat.completions.create({
+      ...getDefaultChatCompletionParams(),
+      messages: [
+        {
+          role: "system",
+          content: SYSTEM_PROMPTS.SCORING
+        },
+        {
+          role: "user",
+          content: USER_PROMPT_TEMPLATES.SCORING(question, answer, wordCount)
+        }
+      ],
+      functions: [scoringFunction],
+      function_call: { name: "score_essay" },
+    });
+
+    const functionCall = response.choices[0].message.function_call;
+    if (!functionCall || !functionCall.arguments) {
+      throw createAPIError(500, ERROR_MESSAGES.OPENAI_RESPONSE_INVALID);
+    }
+
+    const result: ScoringResponse = JSON.parse(functionCall.arguments);
+    
+    return NextResponse.json(result);
+  } catch (error: unknown) {
+    logAPIError("Scoring", error, { question, answer, wordCount });
+    
+    if (error instanceof APIError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.statusCode }
+      );
+    }
+    
+    return NextResponse.json(
+      { error: ERROR_MESSAGES.SCORING_FAILED },
+      { status: 500 }
+    );
+  }
 }
