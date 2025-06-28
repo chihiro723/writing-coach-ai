@@ -2,7 +2,7 @@
 
 // OpenAI関連
 export const OPENAI_CONFIG = {
-  MODEL: "gpt-4o-mini",
+  MODEL: "gpt-4.1",
   GENERATION_COUNT: 5, // 生成する問題数
 } as const;
 
