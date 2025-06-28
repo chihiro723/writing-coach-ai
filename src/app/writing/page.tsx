@@ -1,5 +1,4 @@
 "use client";
-import Button from "@/components/Button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
@@ -12,43 +11,61 @@ export default function Writing() {
   );
   const router = useRouter();
   const handleConfirm = () => {
-    if (answer === "" || question === "") return;
+    if (!answer?.trim() || question === "") return;
     router.push(
       `/writing/correction?question=${question}&answer=${answer}&wordCount=${wordCount}`
     );
   };
-  return (
-    // クエリ情報のquestionがnull以外で存在することを確認
-    <div className="max-w-screen-lg mx-auto shadow-md p-4 mt-8 border">
-      {String(question) === "null" ? (
-        <div className="text-red-700 font-bold mb-2">
-          問題が正しく設定されていません
-        </div>
-      ) : (
-        <>
-          <div className="text-gray-700 font-semibold mb-2">{`問題 ${
-            String(wordCount) === "null" || wordCount === "none"
-              ? ""
-              : `${wordCount}words`
-          }`}</div>
-          <div className="text-gray-700 font-bold text-lg mb-6">{question}</div>
-        </>
-      )}
-      <div className="text-gray-700 font-bold ml-1 italic opacity-60">
-        解答欄
-      </div>
 
-      <div>
-        <textarea
-          className="w-full h-[450px] outline-none border border-gray-300 text-2xl font-medium pt-4 px-8 pb-4 rounded leading-loose"
-          placeholder="Enter your answer here..."
-          spellCheck="false"
-          required
-          value={answer ?? ""}
-          onChange={(e) => setAnswer(e.target.value)}
-        ></textarea>
-        <div className="mt-4">
-          <Button handleClick={handleConfirm}>確認</Button>
+  const isAnswerEmpty = !answer?.trim();
+  return (
+    <div className="flex-1 bg-gradient-to-br from-gray-50 to-blue-50 py-6">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          {String(question) === "null" ? (
+            <div className="text-red-600 font-bold mb-4 p-3 bg-red-50 rounded-xl">
+              問題が正しく設定されていません
+            </div>
+          ) : (
+            <div className="mb-6">
+              <div className="text-gray-600 font-medium mb-2 text-sm">{`問題 ${
+                String(wordCount) === "null" || wordCount === "none"
+                  ? ""
+                  : `${wordCount}words`
+              }`}</div>
+              <div className="text-gray-800 font-bold text-lg p-3 bg-orange-50 rounded-xl border-l-4 border-orange-500">
+                {question}
+              </div>
+            </div>
+          )}
+
+          <div className="mb-4">
+            <label className="block text-gray-700 font-semibold mb-2 text-base">
+              解答欄
+            </label>
+            <textarea
+              className="w-full h-[400px] p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-transparent text-base leading-relaxed resize-none transition-all duration-200"
+              placeholder="ここに英作文を入力してください..."
+              spellCheck="false"
+              required
+              value={answer ?? ""}
+              onChange={(e) => setAnswer(e.target.value)}
+            />
+          </div>
+
+          <div className="flex justify-center mt-4">
+            <button
+              className={`px-6 py-3 text-white rounded-xl font-medium transition-colors duration-200 ${
+                isAnswerEmpty
+                  ? "bg-gray-300 cursor-not-allowed opacity-50"
+                  : "bg-orange-500 hover:bg-orange-600 cursor-pointer"
+              }`}
+              onClick={handleConfirm}
+              disabled={isAnswerEmpty}
+            >
+              確認・添削へ進む
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { openai, logicalityCheckFunction, getDefaultChatCompletionParams } from "@/lib/openai";
+import { openai, grammarCheckFunction, getDefaultChatCompletionParams } from "@/lib/openai";
 import { APIError, createAPIError, logAPIError } from "@/lib/errors";
 import { ERROR_MESSAGES, SYSTEM_PROMPTS, USER_PROMPT_TEMPLATES } from "@/config/constants";
-import type { CorrectionRequest, LogicalityResponse } from "@/types/api";
+import type { CorrectionRequest, GrammarResponse } from "@/types/api";
 
 export async function POST(req: Request) {
   let question: string | undefined;
@@ -22,15 +22,15 @@ export async function POST(req: Request) {
       messages: [
         {
           role: "system",
-          content: SYSTEM_PROMPTS.LOGICALITY_CHECK
+          content: SYSTEM_PROMPTS.GRAMMAR_CHECK
         },
         {
           role: "user",
-          content: USER_PROMPT_TEMPLATES.LOGICALITY_CHECK(question, answer, wordCount)
+          content: USER_PROMPT_TEMPLATES.GRAMMAR_CHECK(question, answer, wordCount)
         }
       ],
-      functions: [logicalityCheckFunction],
-      function_call: { name: "check_logicality" },
+      functions: [grammarCheckFunction],
+      function_call: { name: "check_grammar" },
     });
 
     const functionCall = response.choices[0].message.function_call;
@@ -38,11 +38,11 @@ export async function POST(req: Request) {
       throw createAPIError(500, ERROR_MESSAGES.OPENAI_RESPONSE_INVALID);
     }
 
-    const result: LogicalityResponse = JSON.parse(functionCall.arguments);
+    const result: GrammarResponse = JSON.parse(functionCall.arguments);
     
     return NextResponse.json(result);
   } catch (error: unknown) {
-    logAPIError("Logicality Check", error, { question, answer, wordCount });
+    logAPIError("Grammar Check", error, { question, answer, wordCount });
     
     if (error instanceof APIError) {
       return NextResponse.json(
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     }
     
     return NextResponse.json(
-      { error: ERROR_MESSAGES.LOGICALITY_CHECK_FAILED },
+      { error: ERROR_MESSAGES.GRAMMAR_CHECK_FAILED },
       { status: 500 }
     );
   }
